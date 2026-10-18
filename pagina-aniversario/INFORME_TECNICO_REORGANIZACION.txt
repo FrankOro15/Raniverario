@@ -1,0 +1,590 @@
+REVISION DEL CODIGO REFACTORIZADO
+Contenido consultado el 15 de octubre de 2026.
+No se modifico ningun archivo de codigo para esta revision.
+
+COMPONENTES QUE SE RENDERIZAN Y ORGANIZACION
+
+La pagina se organiza dentro de app/page.tsx. El orden actual es:
+1. Portada, que incluye Reproductor.
+2. ContadorAniversario.
+3. Navegacion.
+4. Una sola seccion condicional: LineaTiempo, Galeria o Cartitas.
+5. TableroPostits, siempre renderizado fuera de la condicion de navegacion.
+6. Pie de pagina.
+
+La pagina mantiene activeSection como fuente unica para las pestañas y
+openCard para conservar que carta se encuentra abierta al cambiar de seccion.
+El tablero conserva internamente sus razones, imagenes y rotaciones.
+
+Existen y se utilizan:
+- app/page.tsx
+- components/Portada.tsx
+- components/ContadorAniversario.tsx
+- components/Navegacion.tsx
+- components/LineaTiempo.tsx
+- components/Galeria.tsx
+- components/Cartitas.tsx
+- components/TableroPostits.tsx
+- components/Reproductor.tsx
+- app/globals.css
+- app/layout.tsx
+
+No existen actualmente components/Playlist.tsx ni
+components/MusicPlayerProvider.tsx.
+
+Nota de contenido: en el tablero actual la razon 15 dice
+"Porque amo tus manos y amo tu toque". El texto anterior a la refactorizacion
+decia "Porque amo mis manos y amo tu toque". Esta revision no corrige el
+contenido; se informa para que pueda confirmarse antes del rediseño.
+
+================================================================================
+app/page.tsx
+================================================================================
+'use client';
+
+import { useState } from 'react';
+import Cartitas from '@/components/Cartitas';
+import ContadorAniversario from '@/components/ContadorAniversario';
+import Galeria from '@/components/Galeria';
+import LineaTiempo from '@/components/LineaTiempo';
+import Navegacion, { type Seccion } from '@/components/Navegacion';
+import Portada from '@/components/Portada';
+import TableroPostits from '@/components/TableroPostits';
+
+export default function AniversarioPage() {
+  const [activeSection, setActiveSection] = useState<Seccion>('timeline');
+  const [openCard, setOpenCard] = useState<number | null>(null);
+
+  const toggleCard = (cardId: number) => {
+    setOpenCard(openCard === cardId ? null : cardId);
+  };
+
+  return (
+    <main 
+      className="min-h-screen text-[#3A4535] font-sans selection:bg-[#D4E0C4] pb-16 px-4"
+      style={{ 
+        backgroundColor: '#8C9B7E', // Tono verde oliva suave de fondo principal inspirándose en tu referencia
+        backgroundImage: 'radial-gradient(ellipse at center, rgba(155, 168, 142, 0.5) 0%, rgba(125, 138, 112, 0.8) 100%)'
+      }}
+    >
+      <div className="max-w-4xl mx-auto py-10 flex flex-col items-center gap-10">
+        <Portada />
+        <ContadorAniversario />
+
+        <Navegacion
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
+
+        {activeSection === 'timeline' && <LineaTiempo />}
+        {activeSection === 'galeria' && <Galeria />}
+        {activeSection === 'cartitas' && (
+          <Cartitas openCard={openCard} onToggleCard={toggleCard} />
+        )}
+
+        <TableroPostits />
+
+        <footer className="text-center text-[12px] text-[#D4E0C4] pt-4 border-t border-white/10 w-full font-serif">
+          Hecho con todo mi amor para ti 🤍
+        </footer>
+      </div>
+    </main>
+  );
+}
+
+================================================================================
+components/Portada.tsx
+================================================================================
+import Reproductor from '@/components/Reproductor';
+
+export default function Portada() {
+  return (
+    <header className="w-full flex flex-col sm:flex-row justify-between items-center gap-6 bg-[#F4F5E8]/95 backdrop-blur-md border border-[#C8D5B5] p-6 rounded-3xl shadow-lg">
+      <div className="text-center sm:text-left space-y-1">
+        <span className="text-[11px] tracking-widest uppercase bg-[#E2EBD4] px-3 py-1 rounded-full text-[#55684C] font-medium">
+          🌿 Nuestro Aniversario 🌿
+        </span>
+        <h1 className="text-2xl sm:text-3xl font-serif text-[#3A4A32] mt-2 font-semibold">
+          Nuestra Historia de Amor
+        </h1>
+      </div>
+
+      <Reproductor />
+    </header>
+  );
+}
+
+================================================================================
+components/ContadorAniversario.tsx
+================================================================================
+'use client';
+
+import { useEffect, useState } from 'react';
+
+const targetDate = new Date('2026-10-19T20:00:00');
+
+export default function ContadorAniversario() {
+  const [timeLeft, setTimeLeft] = useState({
+    days: 0,
+    hours: 0,
+    minutes: 0,
+    seconds: 0,
+    isFinished: false,
+  });
+
+  useEffect(() => {
+    const calculateTime = () => {
+      const now = new Date();
+      const difference = targetDate.getTime() - now.getTime();
+
+      if (difference <= 0) {
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, isFinished: true });
+        return;
+      }
+
+      const days = Math.floor(difference / (1000 * 60 * 60 * 24));
+      const hours = Math.floor((difference / (1000 * 60 * 60)) % 24);
+      const minutes = Math.floor((difference / 1000 / 60) % 60);
+      const seconds = Math.floor((difference / 1000) % 60);
+
+      setTimeLeft({ days, hours, minutes, seconds, isFinished: false });
+    };
+
+    calculateTime();
+    const interval = setInterval(calculateTime, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <section className="w-full bg-[#F4F5E8]/95 backdrop-blur-md border-2 border-dashed border-[#C8D5B5] rounded-3xl p-8 shadow-lg text-center relative overflow-hidden">
+      <h2 className="text-base sm:text-lg font-serif text-[#3A4A32] mb-6 font-medium">
+        {timeLeft.isFinished ? "¡Llegó nuestro aniversario! 🎉" : "Faltan para el 19 de Octubre (8:00 PM):"}
+      </h2>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-md mx-auto">
+        <div className="bg-white/90 p-4 rounded-2xl shadow-sm border border-[#D4E0C4]">
+          <span className="block text-2xl font-bold text-[#55684C]">{timeLeft.days}</span>
+          <span className="text-[10px] uppercase tracking-wider text-[#6F8061]">Días</span>
+        </div>
+        <div className="bg-white/90 p-4 rounded-2xl shadow-sm border border-[#D4E0C4]">
+          <span className="block text-2xl font-bold text-[#55684C]">{timeLeft.hours}</span>
+          <span className="text-[10px] uppercase tracking-wider text-[#6F8061]">Horas</span>
+        </div>
+        <div className="bg-white/90 p-4 rounded-2xl shadow-sm border border-[#D4E0C4]">
+          <span className="block text-2xl font-bold text-[#55684C]">{timeLeft.minutes}</span>
+          <span className="text-[10px] uppercase tracking-wider text-[#6F8061]">Minutos</span>
+        </div>
+        <div className="bg-white/90 p-4 rounded-2xl shadow-sm border border-[#D4E0C4]">
+          <span className="block text-2xl font-bold text-[#55684C]">{timeLeft.seconds}</span>
+          <span className="text-[10px] uppercase tracking-wider text-[#6F8061]">Segundos</span>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+================================================================================
+components/Navegacion.tsx
+================================================================================
+'use client';
+
+export type Seccion = 'timeline' | 'galeria' | 'cartitas';
+
+type NavegacionProps = {
+  activeSection: Seccion;
+  onSectionChange: (section: Seccion) => void;
+};
+
+export default function Navegacion({ activeSection, onSectionChange }: NavegacionProps) {
+  return (
+    <div className="flex gap-8 border-b border-[#C8D5B5]/60 pb-3 text-sm font-serif">
+      <button 
+        onClick={() => onSectionChange('timeline')}
+        className={`transition ${activeSection === 'timeline' ? 'text-[#F4F5E8] font-bold border-b-2 border-[#F4F5E8] pb-1' : 'text-[#D4E0C4] hover:text-white'}`}
+      >
+        ⏳ Timeline
+      </button>
+      <button 
+        onClick={() => onSectionChange('galeria')}
+        className={`transition ${activeSection === 'galeria' ? 'text-[#F4F5E8] font-bold border-b-2 border-[#F4F5E8] pb-1' : 'text-[#D4E0C4] hover:text-white'}`}
+      >
+        🖼️ Galería Polaroid
+      </button>
+      <button 
+        onClick={() => onSectionChange('cartitas')}
+        className={`transition ${activeSection === 'cartitas' ? 'text-[#F4F5E8] font-bold border-b-2 border-[#F4F5E8] pb-1' : 'text-[#D4E0C4] hover:text-white'}`}
+      >
+        💌 Cartitas
+      </button>
+    </div>
+  );
+}
+
+================================================================================
+components/LineaTiempo.tsx
+================================================================================
+export default function LineaTiempo() {
+  return (
+    <section className="w-full bg-[#F4F5E8]/95 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-[#C8D5B5] space-y-6 animate-fadeIn">
+      <h2 className="text-xl font-serif text-center text-[#3A4A32]">Nuestros Momentos</h2>
+      <div className="border-l-2 border-[#C8D5B5] pl-6 ml-4 md:ml-12 space-y-8">
+        <div className="relative">
+          <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-[#718B63] border-4 border-[#F4F5E8]"></span>
+          <span className="text-xs text-[#6F8061] font-semibold">El inicio</span>
+          <h3 className="font-serif text-[#3A4A32] font-semibold">Cuando nos conocimos</h3>
+          <p className="text-sm text-[#55684C] mt-1">El día en que cambió por completo mi forma de ver el mundo.</p>
+        </div>
+        <div className="relative">
+          <span className="absolute -left-[31px] top-1 w-4 h-4 rounded-full bg-[#718B63] border-4 border-[#F4F5E8]"></span>
+          <span className="text-xs text-[#6F8061] font-semibold">Nuestra primera cita</span>
+          <h3 className="font-serif text-[#3A4A32] font-semibold">Café y risas infinitas</h3>
+          <p className="text-sm text-[#55684C] mt-1">Los nervios del principio que se convirtieron en la charla más cómoda.</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+================================================================================
+components/Galeria.tsx
+================================================================================
+export default function Galeria() {
+  return (
+    <section className="w-full bg-[#F4F5E8]/95 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-[#C8D5B5] space-y-6 text-center animate-fadeIn">
+      <h2 className="text-xl font-serif text-[#3A4A32]">Galería de Recuerdos</h2>
+      <p className="text-xs text-[#6F8061]">Aquí irán vuestras fotitos reales en estilo polaroid rústico.</p>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 pt-2">
+        <div className="bg-white p-3 pb-6 shadow-md rounded-sm rotate-[-2deg] border border-[#D4E0C4]">
+          <div className="w-full h-40 bg-[#E8EDDE] mb-3 flex items-center justify-center text-xs text-[#718B63]">[Foto 1]</div>
+          <p className="font-serif text-xs text-[#3A4A32]">Nuestro viaje</p>
+        </div>
+        <div className="bg-white p-3 pb-6 shadow-md rounded-sm rotate-[1deg] border border-[#D4E0C4]">
+          <div className="w-full h-40 bg-[#E8EDDE] mb-3 flex items-center justify-center text-xs text-[#718B63]">[Foto 2]</div>
+          <p className="font-serif text-xs text-[#3A4A32]">Un día especial</p>
+        </div>
+        <div className="bg-white p-3 pb-6 shadow-md rounded-sm rotate-[-1deg] border border-[#D4E0C4]">
+          <div className="w-full h-40 bg-[#E8EDDE] mb-3 flex items-center justify-center text-xs text-[#718B63]">[Foto 3]</div>
+          <p className="font-serif text-xs text-[#3A4A32]">Tú y yo</p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+================================================================================
+components/Cartitas.tsx
+================================================================================
+'use client';
+
+type CartitasProps = {
+  openCard: number | null;
+  onToggleCard: (cardId: number) => void;
+};
+
+export default function Cartitas({ openCard, onToggleCard }: CartitasProps) {
+  const cartas = [
+    { id: 1, title: "Una razón por la que te amo", content: "Amo la forma en que tus ojos brillan cuando te ríes de verdad." },
+    { id: 2, title: "Nuestro mejor recuerdo", content: "Todas nuestras charlas interminables donde el tiempo simplemente volaba." },
+    { id: 3, title: "Para cuando estés triste", content: "Recuerda que eres la persona más fuerte, hermosa y valiente que conozco." },
+    { id: 4, title: "Una promesa", content: "Prometo seguir celebrando cada uno de tus días y estar siempre a tu lado." }
+  ];
+
+  return (
+    <section className="w-full bg-[#F4F5E8]/95 backdrop-blur-md p-8 rounded-3xl shadow-lg border border-[#C8D5B5] space-y-6 text-center animate-fadeIn">
+      <h2 className="text-xl font-serif text-[#3A4A32]">Buzón de Cartitas</h2>
+      <p className="text-xs text-[#6F8061]">Toca cualquier sobre para leer su contenido:</p>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-left">
+        {cartas.map((carta) => (
+          <div 
+            key={carta.id}
+            onClick={() => onToggleCard(carta.id)}
+            className="bg-white/90 border border-[#D4E0C4] p-5 rounded-2xl cursor-pointer transition hover:bg-[#FAFBF6] shadow-sm"
+          >
+            <div className="flex justify-between items-center mb-1">
+              <h3 className="font-serif text-sm font-medium text-[#3A4A32]">{carta.title}</h3>
+              <span className="text-[10px] text-[#718B63] font-semibold">{openCard === carta.id ? "Cerrar ✉️" : "Abrir 💌"}</span>
+            </div>
+            {openCard === carta.id && (
+              <p className="text-xs text-[#55684C] mt-3 pt-3 border-t border-[#E8EDDE] italic">&quot;{carta.content}&quot;</p>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+================================================================================
+components/TableroPostits.tsx
+================================================================================
+'use client';
+
+import { useState } from 'react';
+
+type NotaConfig = {
+  ranitaImg: string;
+  rotacion: number;
+};
+
+export default function TableroPostits() {
+  // Tus 38 razones completas
+  const todasLasRazones = [
+    "Me gusta tu sonrisa", "Me gusta tu piel", "Me gustan tus labios", "Porque me haces feliz",
+    "Porque eres lo mejor del mundo", "Porque me quieres", "Porque eres la mejor novia del universo",
+    "Porque tu sonrisa alegra mis días", "Porque tus ojos lindos brillan tan hermoso",
+    "Porque me divierto contigo demasiado", "Porque me río mucho contigo",
+    "Porque me cuidas y me abrazas", "Porque amo tus besos", "Porque amo tus abrazos",
+    "Porque amo tus manos y amo tu toque", "Porque tu risa me encanta y la podría diferenciar en cualquier lugar del mundo",
+    "Amo la forma en la que me miras", "Amo que tenemos a la kirr",
+    "Amo cómo me salvas los días con un solo mensajito tuyo",
+    "Porque me encanta cuando te quedas dormida en mi hombro",
+    "Amo nuestras pláticas de la nada sobre cualquier tontería",
+    "Amo que eres mi paz en medio del caos del mundo",
+    "Te amo por bonita jeje", "Te amo porque eres mi mundo",
+    "Porque eres mi rana melón, mi rana pelón jejej",
+    "La verdad no necesito razones para amarte, simplemente no puedo dejar de hacerlo y aun así hay razones infinitas de por qué te amo",
+    "Porque eres una rana bb", "Because eres mi conija",
+    "Porque quiero una familia tradicional panista cristiana y conservadora contigo",
+    "Por eso te amo", "Te amo porque a diario me das razones para amarte",
+    "Te amo porque estoy enamorado de ti", "Te amo porque realmente no puedo vivir sin ti",
+    "Because puedo ser al lado de ti yo mismo", "Porque me encanta verte feliz",
+    "Porque veo un futuro contigo", "Simplemente eres tú", "Te amo y te elegiría mil vidas"
+  ];
+
+  const [razonesDescubiertas, setRazonesDescubiertas] = useState<string[]>([]);
+  const [notasConfig, setNotasConfig] = useState<NotaConfig[]>([]);
+
+  const agregarPostIt = () => {
+    if (razonesDescubiertas.length < todasLasRazones.length) {
+      const siguienteIndex = razonesDescubiertas.length;
+      setRazonesDescubiertas([todasLasRazones[siguienteIndex], ...razonesDescubiertas]);
+      
+      const ranitaNum = Math.floor(Math.random() * 9) + 1;
+      const ranitaImg = `/images/r${ranitaNum}.jpg`;
+      const rotacionAleatoria = Math.random() * 5 - 2.5; 
+
+      setNotasConfig([{ ranitaImg, rotacion: rotacionAleatoria }, ...notasConfig]);
+    }
+  };
+
+  const tableroCompleto = razonesDescubiertas.length === todasLasRazones.length;
+
+  return (
+    <section 
+      className="w-[calc(100vw-2rem)] max-w-[1400px] h-[760px] shrink-0 rounded-3xl p-8 sm:p-12 shadow-2xl relative flex flex-col items-center gap-6 border-[10px] border-[#C9B596] ring-1 ring-inset ring-[#F8F1E5]"
+      style={{ 
+        backgroundColor: '#F1EBDD',
+        backgroundImage: 'radial-gradient(ellipse at center, #F8F4E9 0%, #EEE5D3 100%)',
+        boxShadow: 'inset 0 0 0 5px rgba(255, 250, 240, 0.55), 0 20px 40px rgba(74, 59, 50, 0.18)',
+      }}
+    >
+      {/* TÍTULO LIMPIO */}
+      <div className="text-center bg-[#F4F5E8]/95 backdrop-blur-sm px-6 py-3 rounded-2xl border border-[#C8D5B5] shadow-md z-10">
+        <h3 className="text-xl sm:text-2xl font-serif font-semibold tracking-wide text-[#40543B]">Tablero de razones por las que te amo 📌</h3>
+        <p className="text-xs text-[#6F8061] mt-0.5">Haz clic para descubrir una nueva razón</p>
+      </div>
+
+      {/* BOTÓN O MENSAJE FINAL */}
+      {!tableroCompleto ? (
+        <button
+          onClick={agregarPostIt}
+          className="bg-[#718B63] border border-[#5D7651] text-white text-xs px-6 py-3 rounded-full shadow-md hover:bg-[#627D55] transition font-medium tracking-wide z-10"
+        >
+          Descubre otra razón 💛
+        </button>
+      ) : (
+        <div className="bg-[#F4F5E8] border-2 border-dashed border-[#C8D5B5] p-6 rounded-2xl shadow-lg animate-bounce text-center z-10">
+          <p className="font-serif text-base text-[#40543B] font-bold">
+            🤍 Te amo melón y siempre lo haré, tú eres mi hogar 🤍
+          </p>
+        </div>
+      )}
+
+      {/* TARJETITAS CON LA IMAGEN DE LA RANITA EN FORMATO .JPG */}
+      {razonesDescubiertas.length > 0 && (
+        <div className="board-scrollbar grid grid-cols-2 md:grid-cols-3 xl:grid-cols-4 auto-rows-[clamp(160px,22vw,260px)] gap-8 pt-4 w-full max-h-[440px] sm:max-h-[520px] overflow-y-auto px-3 z-10">
+          {razonesDescubiertas.map((razon, index) => {
+            const config = notasConfig[index] || { ranitaImg: '/images/r1.jpg', rotacion: 0 };
+
+            return (
+              <div 
+                key={index}
+                style={{ transform: `rotate(${config.rotacion}deg)` }}
+                className="relative h-full min-w-0 rounded-2xl shadow-xl flex flex-col justify-center items-center text-center bg-white transition hover:scale-105 duration-200 border-2 border-[#C8E0C4] overflow-hidden"
+              >
+                {/* IMAGEN DE LA RANITA EN JPG */}
+                <img 
+                  src={config.ranitaImg} 
+                  alt="Post-it ranita" 
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none opacity-90"
+                />
+
+                {/* Texto de la razón superpuesto */}
+                <p className="font-serif text-xs md:text-sm text-[#2D3A2E] font-medium leading-relaxed drop-shadow-sm px-3 py-2 z-10 bg-white/80 backdrop-blur-[2px] rounded-xl my-auto">
+                  &quot;{razon}&quot;
+                </p>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </section>
+  );
+}
+
+================================================================================
+components/Reproductor.tsx
+================================================================================
+'use client';
+
+import { useRef, useState } from 'react';
+
+export default function Reproductor() {
+  const [isPlaying, setIsPlaying] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  const togglePlay = () => {
+    if (audioRef.current) {
+      if (isPlaying) {
+        audioRef.current.pause();
+      } else {
+        audioRef.current.play().catch((e) => console.log("Audio play error:", e));
+      }
+      setIsPlaying(!isPlaying);
+    }
+  };
+
+  return (
+    <>
+      <audio ref={audioRef} src="/musica/cancion.mp3" loop />
+
+      <button 
+        onClick={togglePlay}
+        className="flex items-center gap-3 bg-white/90 border border-[#C8D5B5] px-4 py-2.5 rounded-2xl shadow-sm hover:bg-[#F9FBF6] transition group"
+      >
+        <div className={`w-7 h-7 rounded-full bg-[#D4E0C4] flex items-center justify-center text-xs text-[#3A4A32] font-bold ${isPlaying ? 'animate-spin' : ''}`}>
+          cass
+        </div>
+        <div className="text-left">
+          <span className="block text-xs font-semibold text-[#3A4A32]">
+            {isPlaying ? "Pausar música" : "Nuestra Canción 🎵"}
+          </span>
+          <span className="block text-[10px] text-[#6F8061]">
+            {isPlaying ? "Reproduciendo..." : "Reproducir casete"}
+          </span>
+        </div>
+      </button>
+    </>
+  );
+}
+
+================================================================================
+app/globals.css
+================================================================================
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.board-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #8da17a #e9e2d3;
+  scrollbar-gutter: stable;
+}
+
+.board-scrollbar::-webkit-scrollbar {
+  width: 10px;
+}
+
+.board-scrollbar::-webkit-scrollbar-track {
+  background: #e9e2d3;
+  border: 2px solid #f8f4e9;
+  border-radius: 999px;
+}
+
+.board-scrollbar::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #a9b995, #718b63);
+  border: 2px solid #f8f4e9;
+  border-radius: 999px;
+}
+
+.board-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #627d55;
+}
+
+/* Barra de desplazamiento estética para el tablero de razones */
+.board-scrollbar::-webkit-scrollbar {
+  width: 8px; /* Ancho de la barra */
+}
+
+.board-scrollbar::-webkit-scrollbar-track {
+  background: rgba(238, 229, 211, 0.5); /* Fondo suavecito del riel */
+  border-radius: 10px;
+}
+
+.board-scrollbar::-webkit-scrollbar-thumb {
+  background: #C9B596; /* Color de la barrita que se mueve (tono madera/arena) */
+  border-radius: 10px;
+  border: 2px solid rgba(248, 244, 233, 0.8); /* Margen interno para que se vea más estilizada */
+}
+
+.board-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #A89271; /* Se oscurece ligeramente cuando pasas el ratón */
+}
+
+================================================================================
+app/layout.tsx
+================================================================================
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({ children }: LayoutProps<"/">) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}

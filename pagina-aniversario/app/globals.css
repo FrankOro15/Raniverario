@@ -1,0 +1,378 @@
+
+@import "tailwindcss";
+
+:root {
+  --background: #eee9dc;
+  --foreground: #393c2e;
+
+  --olive: #687653;
+  --olive-dark: #414b36;
+  --sage: #a6ad91;
+  --cream: #f8f4e9;
+  --paper: #eee5d3;
+  --paper-dark: #d8cbb4;
+  --ink: #393c2e;
+  --muted-ink: #777665;
+  --terracotta: #a66f5b;
+  --fine-line: rgba(77, 82, 59, 0.24);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-geist-mono);
+}
+
+/* Base de la página */
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  color: var(--olive-dark);
+  background: #d8dfc9;
+}
+
+button,
+a {
+  -webkit-tap-highlight-color: transparent;
+}
+
+button {
+  cursor: pointer;
+}
+
+/* Tipografía editorial */
+
+.font-editorial {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.letter-spacing-wide {
+  letter-spacing: 0.16em;
+}
+
+/* Detalles decorativos */
+
+.paper-texture {
+  background-color: var(--cream);
+  background-image:
+    radial-gradient(
+      ellipse at 15% 20%,
+      rgba(181, 157, 116, 0.10),
+      transparent 45%
+    ),
+    radial-gradient(
+      ellipse at 85% 75%,
+      rgba(181, 157, 116, 0.08),
+      transparent 40%
+    );
+}
+
+.editorial-divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--olive);
+}
+
+.editorial-divider::before,
+.editorial-divider::after {
+  content: "";
+  height: 1px;
+  flex: 1;
+  background: var(--fine-line);
+}
+
+/* Animaciones suaves */
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fade-in 450ms ease-out both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Barra de desplazamiento del tablero de post-its */
+
+.board-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #8da17a #e9e2d3;
+  scrollbar-gutter: stable;
+}
+
+.board-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.board-scrollbar::-webkit-scrollbar-track {
+  background: rgba(238, 229, 211, 0.5);
+  border-radius: 10px;
+}
+
+.board-scrollbar::-webkit-scrollbar-thumb {
+  background: #c9b596;
+  border: 2px solid rgba(248, 244, 233, 0.8);
+  border-radius: 10px;
+}
+
+.board-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #a89271;
+}
+
+/* Decoraciones románticas de los márgenes */
+.decoraciones-fondo {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.adorno {
+  position: absolute;
+  will-change: transform;
+}
+
+.adorno-conejo {
+  width: 76px;
+  height: 84px;
+  animation: animalito-balanceo 5s ease-in-out infinite;
+}
+
+.adorno-perro {
+  width: 82px;
+  height: 76px;
+  animation: animalito-balanceo 5.8s ease-in-out infinite;
+}
+
+.adorno-corazon {
+  width: 23px;
+  height: 23px;
+  animation: corazon-flotante 4s ease-in-out infinite;
+}
+
+.conejo-uno {
+  top: 7%;
+  left: calc(50% - 510px);
+  transform: rotate(-8deg);
+}
+
+.perro-uno {
+  top: 23%;
+  right: calc(50% - 510px);
+  animation-delay: -2s;
+  transform: rotate(7deg);
+}
+
+.corazon-uno {
+  top: 17%;
+  right: calc(50% - 460px);
+  animation-delay: -1s;
+}
+
+.conejo-dos {
+  top: 39%;
+  right: calc(50% - 510px);
+  animation-delay: -1.5s;
+  transform: rotate(7deg);
+}
+
+.corazon-dos {
+  top: 47%;
+  left: calc(50% - 475px);
+  animation-delay: -2.5s;
+}
+
+.perro-dos {
+  top: 63%;
+  left: calc(50% - 510px);
+  animation-delay: -3s;
+  transform: rotate(-6deg);
+}
+
+.corazon-tres {
+  top: 76%;
+  right: calc(50% - 465px);
+  animation-delay: -1.8s;
+}
+
+.conejo-tres {
+  top: 88%;
+  right: calc(50% - 510px);
+  animation-delay: -2.5s;
+  transform: rotate(5deg);
+}
+
+@keyframes animalito-balanceo {
+  0%, 100% {
+    translate: 0 0;
+    rotate: -3deg;
+  }
+  50% {
+    translate: 0 -7px;
+    rotate: 3deg;
+  }
+}
+
+@keyframes corazon-flotante {
+  0%, 100% {
+    translate: 0 0;
+    scale: 1;
+  }
+  50% {
+    translate: 3px -12px;
+    scale: 1.08;
+  }
+}
+
+/* En pantallas pequeñas dejamos más espacio para el contenido */
+@media (max-width: 1000px) {
+  .adorno-conejo,
+  .adorno-perro {
+    width: 54px;
+    height: 58px;
+  }
+
+  .adorno-corazon {
+    width: 17px;
+    height: 17px;
+  }
+
+  .conejo-uno,
+  .perro-dos,
+  .corazon-dos {
+    left: 3px;
+  }
+
+  .perro-uno,
+  .conejo-dos,
+  .conejo-tres,
+  .corazon-uno,
+  .corazon-tres {
+    right: 3px;
+  }
+}
+
+@media (max-width: 600px) {
+  .adorno-conejo,
+  .adorno-perro {
+    width: 38px;
+    height: 43px;
+  }
+
+  .adorno-corazon {
+    width: 14px;
+    height: 14px;
+  }
+
+  .conejo-uno,
+  .perro-dos,
+  .corazon-dos {
+    left: 0;
+  }
+
+  .perro-uno,
+  .conejo-dos,
+  .conejo-tres,
+  .corazon-uno,
+  .corazon-tres {
+    right: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .adorno {
+    animation: none !important;
+  }
+}
+
+/* Perritos adicionales */
+.perro-tres {
+  top: 51%;
+  left: calc(50% - 510px);
+  width: 76px;
+  height: 72px;
+  animation-delay: -1.2s;
+}
+
+.perro-cuatro {
+  top: 80%;
+  right: calc(50% - 510px);
+  width: 82px;
+  height: 76px;
+  animation-delay: -2.8s;
+}
+
+/* Más corazones */
+.corazon-cuatro {
+  top: 32%;
+  left: calc(50% - 465px);
+  animation-delay: -1.5s;
+}
+
+.corazon-cinco {
+  top: 61%;
+  right: calc(50% - 465px);
+  animation-delay: -3s;
+}
+
+.corazon-seis {
+  top: 91%;
+  left: calc(50% - 465px);
+  animation-delay: -2s;
+}
+
+/* Evitar que las nuevas decoraciones estorben en móvil */
+@media (max-width: 1000px) {
+  .perro-tres {
+    left: 3px;
+  }
+
+  .perro-cuatro {
+    right: 3px;
+  }
+
+  .corazon-cuatro,
+  .corazon-seis {
+    left: 3px;
+  }
+
+  .corazon-cinco {
+    right: 3px;
+  }
+}
+

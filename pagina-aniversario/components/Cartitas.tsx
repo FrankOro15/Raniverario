@@ -15,7 +15,27 @@ export default function Cartitas({
     {
       id: 1,
       title: 'Feliz aniversario, mi amor',
-      content: 'Rana Melon Te amo mucho, eres lo mejor que me ha pasado en la vida, espero que este sea el primero de muchos años juntos.',
+      content: [
+        'Rana Melon Te amo mucho, eres lo mejor que me ha pasado en la vida, espero que este sea el primero de muchos años juntos.',
+        'Hola amor',
+        'No sé si para ti está carta sea algo normal o sea algo diferente a todo lo que te he escrito pero te quiero expresar cuan feliz estoy de tu regreso, la vida es mejor, el mundo tiene más color y yo simplemente deje de estar triste y aburrido, tu siempre me haces reír mucho y me haces feliz. Aunque peleamos aveces eso no importa porque la vida es mejor si estamos juntitos.',
+        'Antes de que volvieras te extrañaba muchísimo y la verdad a pesar del miedo que tenía.',
+        'Yo quería volver a estar feliz en tus brazos y tomar tu mano; besarte era algo que yo moría de ganas de hacer.',
+        'Este año ha tenido muchísimas cosas, te quiero pedir perdón si la cago mucho te juro que intento hacerlo todo de mejor manera porque no te quiero perder.',
+        'Para mí eres TODO.',
+        'Me pone muy feliz estar contigo y que hayamos hecho nuestra pequeña familia.',
+        'Todos los días lucho para que tengamos un porvenir tu, yo y la kirrr.',
+        'Espero que esté año sea el primero de muchos y que nuestra pequeña familia crezca mucho.',
+        'Yo tengo mucho sueños y en todos estas tú.',
+        'Tu mi linda princesa',
+        'Tu mi linda rana melón.',
+        'Creeme que no cambiaría lo nuestro por nada del mundo.',
+        'Para mí esto es algo tan especial algún de uno en un millón.',
+        'Quiero pasar el resto de mi vida viéndote y riendo contigo.',
+        'Jejeje espero que estés feliz igual que yo y te guste este pequeño pedazo de mi corazón que siempre será tuyo.',
+        'Te amo mucho jamás olvides eso.',
+        'Siempre tuyo Frank.',
+      ],
       sello: '✿',
     },
   ];
@@ -128,13 +148,11 @@ export default function Cartitas({
 
                   {isOpen && (
                     <div className="mt-4 border-t border-[#c8c9b4]/70 pt-3">
-                      <p className="font-serif text-sm italic leading-7 text-[#555b48]">
-                        “{carta.content}”
-                      </p>
-
-                      <p className="mt-3 text-right font-serif text-xs italic text-[#85846a]">
-                        Con cariño, siempre ♡
-                      </p>
+                      <div className="space-y-3 font-serif text-sm italic leading-7 text-[#555b48]">
+                        {carta.content.map((paragraph, index) => (
+                          <p key={index}>{paragraph}</p>
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>
